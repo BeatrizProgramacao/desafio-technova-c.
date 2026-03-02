@@ -2,86 +2,103 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Estrutura do Item conforme o desafio
+// 1. Definição das Structs
 typedef struct {
 char nome[30];
 char tipo[20];
 int quantidade;
 } Item;
 
-// Vetor para 10 itens e contador
-Item mochila[10];
-int totalItens = 0;
+// Estrutura para Lista Encadeada
+typedef struct No {
+Item dados;
+struct No* proximo;
+} No;
 
-// Funcao para listar (chamada apos cada operacao)
+// Variáveis Globais
+Item vetorMochila[10];
+int totalVetor = 0;
+No* listaMochila = NULL;
+int comparacoes = 0; // Contador de operações
+
+// --- FUNÇÕES OBRIGATÓRIAS ---
+
+void inserirItem(Item novo) {
+// Inserir no Vetor
+if (totalVetor < 10) {
+vetorMochila[totalVetor++] = novo;
+}
+// Inserir na Lista Encadeada
+No* novoNo = (No*)malloc(sizeof(No));
+novoNo->dados = novo;
+novoNo->proximo = listaMochila;
+listaMochila = novoNo;
+printf("\nItem inserido em ambas as estruturas!");
+}
+
 void listarItens() {
-printf("\n--- INVENTARIO ATUAL (%d/10) ---\n", totalItens);
-if (totalItens == 0) {
-printf("Mochila vazia.\n");
-} else {
-for (int i = 0; i < totalItens; i++) {
-printf("%d. [%s] Tipo: %s | Qtd: %d\n", i+1, mochila[i].nome, mochila[i].tipo, mochila[i].quantidade);
+printf("\n--- EXIBINDO VETOR ---");
+for (int i = 0; i < totalVetor; i++) {
+printf("\n%d. %s | Qtd: %d", i+1, vetorMochila[i].nome, vetorMochila[i].quantidade);
 }
+printf("\n\n--- EXIBINDO LISTA ---");
+No* atual = listaMochila;
+while (atual != NULL) {
+printf("\n- %s | Qtd: %d", atual->dados.nome, atual->dados.quantidade);
+atual = atual->proximo;
 }
-printf("-------------------------------\n");
 }
 
-void inserirItem() {
-if (totalItens >= 10) {
-printf("\nErro: Mochila cheia!\n");
-return;
+// Ordenação Bubble Sort
+void ordenarVetor() {
+for (int i = 0; i < totalVetor - 1; i++) {
+for (int j = 0; j < totalVetor - i - 1; j++) {
+if (strcmp(vetorMochila[j].nome, vetorMochila[j+1].nome) > 0) {
+Item temp = vetorMochila[j];
+vetorMochila[j] = vetorMochila[j+1];
+vetorMochila[j+1] = temp;
 }
-Item novo;
-printf("\nNome do item: ");
-scanf(" %[^\n]s", novo.nome);
-printf("Tipo (arma/cura/municao): ");
-scanf(" %[^\n]s", novo.tipo);
-printf("Quantidade: ");
-scanf("%d", &novo.quantidade);
-mochila[totalItens] = novo;
-totalItens++;
-printf("\nItem adicionado!");
-listarItens();
+}
+}
+printf("\nVetor ordenado por nome!");
 }
 
-void removerItem() {
-char nomeBusca[30];
-printf("\nNome para remover: ");
-scanf(" %[^\n]s", nomeBusca);
-for (int i = 0; i < totalItens; i++) {
-if (strcmp(mochila[i].nome, nomeBusca) == 0) {
-for (int j = i; j < totalItens - 1; j++) mochila[j] = mochila[j + 1];
-totalItens--;
-printf("\nItem removido.");
-listarItens();
+// Busca Binária no Vetor
+void buscarBinaria(char* nome) {
+comparacoes = 0;
+int esq = 0, dir = totalVetor - 1;
+while (esq <= dir) {
+comparacoes++;
+int meio = (esq + dir) / 2;
+int res = strcmp(vetorMochila[meio].nome, nome);
+if (res == 0) {
+printf("\nItem encontrado! Comparacoes: %d", comparacoes);
 return;
 }
+if (res < 0) esq = meio + 1;
+else dir = meio - 1;
 }
-printf("\nItem nao encontrado.");
-}
-
-void buscarItem() {
-char nomeBusca[30];
-printf("\nBuscar por nome: ");
-scanf(" %[^\n]s", nomeBusca);
-for (int i = 0; i < totalItens; i++) {
-if (strcmp(mochila[i].nome, nomeBusca) == 0) {
-printf("\nAchou! Nome: %s | Tipo: %s | Qtd: %d\n", mochila[i].nome, mochila[i].tipo, mochila[i].quantidade);
-return;
-}
-}
-printf("\nNao encontrado.");
+printf("\nItem nao encontrado. Comparacoes: %d", comparacoes);
 }
 
 int main() {
-int op;
+int opcao;
+char nomeBusca[30];
 do {
-printf("\n1.Inserir 2.Remover 3.Listar 4.Buscar 0.Sair\nEscolha: ");
-scanf("%d", &op);
-if(op==1) inserirItem();
-else if(op==2) removerItem();
-else if(op==3) listarItens();
-else if(op==4) buscarItem();
-} while (op != 0);
+printf("\n\n1.Inserir 2.Listar 3.Ordenar 4.Busca Binaria 0.Sair\nEscolha: ");
+scanf("%d", &opcao);
+if (opcao == 1) {
+Item it;
+printf("Nome: "); scanf("%s", it.nome);
+printf("Tipo: "); scanf("%s", it.tipo);
+printf("Qtd: "); scanf("%d", &it.quantidade);
+inserirItem(it);
+} else if (opcao == 2) listarItens();
+else if (opcao == 3) ordenarVetor();
+else if (opcao == 4) {
+printf("Nome para busca: "); scanf("%s", nomeBusca);
+buscarBinaria(nomeBusca);
+}
+} while (opcao != 0);
 return 0;
 }
